@@ -1,0 +1,57 @@
+#
+# libprof -- build a library that profiles libc 
+#
+# Include solaris or linux options
+#include Linux.opts
+include SunOS.opts
+
+# Compile .c files with provided options
+.c.o:
+	$(LINT) $(LINTOPTS) $<
+	$(CC) $(CCOPTS) -c -o $*.o $<
+
+all: libprof_libc.so.1 testProgram test 
+#all: libprof_suba.so.1
+#all: libprof_hashmap.so.1
+
+libprof_libc.so.1: libprof.o libc.o libc.i libprof.h
+	$(LD) $(LDOPTS) -o libprof_libc.so.1 libprof.o libc.o $(LIBS)
+
+libprof_suba.so.1: suba.o libprof.o
+	$(LD) $(LDOPTS) -o libprof_suba.so.1 suba.o libprof.o $(LIBS)
+
+libprof_hashmap.so.1: hashmap.o libprof.o
+	$(LD) $(LDOPTS) -o libprof_hashmap.so.1 hashmap.o libprof.o $(LIBS)
+
+
+testProgram: testProgram.c
+	cc -g -errshort=short -o testProgram testProgram.c
+
+test: libprof_libc.so.1 testProgram
+	# Fix for linux non-executable mount
+	cp ./testProgram /tmp
+	LD_PRELOAD=./libprof_libc.so.1 /tmp/testProgram
+test2: # A dbx-able version of testProgram
+	cc -DDEBUG -g -errshort=short -o testProgram2 testProgram.c \
+		libprof.o libc.o -lc -ldl -lm
+test3: # A linux test usng libma
+	cc -g -errshort=short -lmba -o testProgram3 testProgram3.c
+	LD_PRELOAD=./suba_preload.so.1 ./testProgram3
+
+
+tar:
+	rm -f ../libprof.tar ../libprof.tar.gz
+	tar cvf ../libprof.tar libprof libprof_libc.so.1 Makefile *.c \
+		*.i *.h sparc-sun-solaris2.9 i686-suse-linux
+	cd ..; gzip libprof.tar
+
+unison: clean
+	unison home -batch
+
+install: libprof_libc.so.1
+	cp libprof $(HOME)/bin
+	cp libprof_libc.so.1 $(HOME)/lib
+
+clean:
+	rm -f lib*.so.1 testProgram[2] *.o core 
+

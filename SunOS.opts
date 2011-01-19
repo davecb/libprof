@@ -1,0 +1,10 @@
+# Options for Solaris
+LINT=lint
+LINTOPTS=-errchk -s -k -errsecurity -errtags -erroff=E_NAME_DECL_NOT_USED_DEF2,E_NAME_DEF_NOT_USED2,E_NAME_USED_NOT_DEF2,E_PARAM_REDECLARED,E_GLOBAL_COULD_BE_STATIC2,E_ASSIGN_INT_TO_SMALL_INT
+CC=cc
+CCOPTS=-g -KPIC -xregs=no%appl -errshort=short 
+LD=ld
+LDOPTS=-G -z defs -z initarray=profInit -z finiarray=profFini # -z initfirst
+ # Note the -z initfirst may be required if you're not using RTLD_NEXT
+LIBS=-lc -ldl -lm
+

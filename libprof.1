@@ -1,0 +1,98 @@
+.\"	@(#) a64l.so.1 
+.\"
+.TH libprof.so.1 1 
+.AT 3
+.SH NAME
+libprof.so.1 \- shared library to profile functions in libc
+
+.SH SYNOPSIS
+.B LD_PRELOAD=./libprof.so.1 
+program [args] ...
+.sp 0
+.SH DESCRIPTION
+.I libprof
+intercepts calls to libc and reports their cpu-time usage.
+.PP
+This is used to identify hot-spots in library usage by a program,
+like the 
+.I prof
+source-code profiler. Unlike the source profiler, libprof doesn't
+require recompilation, but works on unmodified binaries.
+.PP
+
+When loaded with a program, it emits a time profile, such as:
+.nj
+.nf
+Name                           Duration   Pct.        Calls Sec/Call
+----                           ---------- ----        ----- ----------
+Entire program                 0.23329523 100.0           1 0.23329523
+a64l                           0.11952140 51.23      100000 0.00000120
+addseverity                    0.01279909  5.56           1 0.01279909
+Measurement overhead           0.00031536  0.14           1 0.00031536
+
+.ju
+.fi
+
+.PP
+This is sorted from largest to smallest duration, always beginning with
+an entry for the whole program. One of the entries reports on the
+(measurement) overhead of the libprof library.
+.PP
+If the program profiled is a shell script, one profile per binary
+program is emitted, labelled with the pid of the program. 
+.I ptree
+(1) can be used to clarify which pid(s) are of interest.
+
+.SH FILES
+.sp 0
+
+.SH "SEE ALSO"
+truss -c (1), prof(1).
+
+.SH BUGS
+Not thread-aware, so that two threads entering the same 
+function at once can clash. On Solaris this causes an
+assertion failure and the program being tested to
+hang in lwp_park. This is known to apply to
+.nf
+.nj
+	mozilla
+	acroread 5
+	gij
+	intop
+	ntop
+	rmic
+	svn
+	wish
+.fi
+.ju
+.for example, pstack shows mozilla hung in lwp_park, thusly
+.nf
+.nj
+698:	/usr/local/mozilla/mozilla-bin
+ ff2c5f88 lwp_park (0, 0, 0)
+ ff2c1d00 mutex_lock_queue (ff2d8b84, 0, ff23fbc8, ff2d8000, ff3d90d4, ff3ec7ac) + 104
+ ff2c2700 slow_lock (ff23fbc8, fed30000, 0, 0, ff3c4ed8, 0) + 58
+ ff1faeec dgettext (ff227e30, ff227e40, ff3ef288, ff23c000, 1, 0) + 24
+ ff1b5ed4 _assert  (ff376648, ff376658, 1da, ff216b4c, 0, 0) + 18
+ ff324bb0 calloc   (1, 18, 0, 0, 0, 0) + b8
+ ff1faf08 dgettext (ff227e30, ff227e40, 0, ff23c000, 0, 0) + 40
+ ff1b5ed4 _assert  (ff377928, ff377938, b52, 0, 0, 0) + 18
+ ff3349ec getenv   (ff2c6570, 1e454, 0, 8, ff3bb7b8, 0) + b4
+ ff2b9bc0 envvar   (ff2c6570, f4240, 0, fffffff8, 0, ffbfe791) + 18
+ ff2b9ed4 _lib_init (ff3ed7b8, 0, ff3ec204, 3127c, ff3c3068, 0) + 290
+ ff2c6270 _init    (ff3ec0c0, ff2a1cec, 18, fe801548, 2, ff3ec7ac) + 4
+ ff3bf228 call_init (fe801f70, 0, fe801f70, ffdfffff, 400000, 80000) + 1c0
+ ff3be7fc setup    (ffbfee5c, ff3ec194, 10000, 0, ff3ec000, 0) + 135c
+ ff3cc400 _setup   (e265, a, a, ffbfffce, ffbfffda, ff3cc03c) + 3a8
+ ff3b3994 _rt_boot (0, 0, 0, 0, 0, 0) + 88
+ 00000000 ???????? (0, 0, 0, 0, 0, 0)
+.fi
+.ju
+.PP
+Doesn't allow turning off headers. Doesn't allow sorting by 
+calls column (use sort -k 4rn) or by seconds/call
+(use sort -k 5rn).
+.PP
+Cannot report interim results in sorted order (sorting invalidates
+further data collection).

@@ -1,0 +1,47 @@
+Copied to /tmp si I could execute
+call sigemptyset, intercepted ok
+sigaction, ok too
+doesn't allow single-step thorough multi-line RECORD macro...
+sets start time
+hangs in "for (i=0; i < j; i++) {" when I step or next
+hmmn, not it didn't, gdb wasn't showing me the loop body, but
+	it was running,at step 26524 out of 100000
+steppinmg...
+finally finished, pc disk spun madly
+traces open of /proc/self/cmdline
+ditto read, close
+strchr in skipPrefix of /tmp/testProgram2  (huh???!)
+getpid
+qsort
+traces happily in "for (p=&ProfStats[0]; p->name != NULL; p++) {"
+reports on:
+sigemptyset
+sigaction
+open
+getpid
+close
+strrchr ? 2
+addseverity
+read
+vprintf, from my personal printf (!)
+memcpy, 322???
+fopen	2
+malloc	6
+sscanf	6
+fclose	2
+strlen 23
+measurement overhead
+memset	8
+memchr 6
+strchr 2
+lots of non-called interfaces
+fnmatch 1
+madvise	1
+memcpy	380
+putxline 1
+strfmon	78	insane!
+vfork 27
+ended profFini
+returned to __libc_start_main
+exited normally
+

@@ -1,0 +1,8 @@
+# Options for Linux
+LINT=:
+LINTOPTS=
+CC=gcc
+CCOPTS=-g -fPIC -pedantic -Wall # -Wno-long-long -Wno-cast-qual
+LD=ld
+LDOPTS=-shared -fini profFini -init profInit
+LIBS=-lc -ldl -lm
